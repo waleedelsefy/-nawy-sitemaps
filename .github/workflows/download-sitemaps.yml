@@ -1,4 +1,3 @@
-<<<'YAML'
 name: Download Nawy Sitemaps Daily
 
 on:
@@ -57,4 +56,3 @@ jobs:
             git push
             echo "✅ Changes pushed to repository"
           fi
-YAML;
