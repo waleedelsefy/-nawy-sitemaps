@@ -34,10 +34,10 @@ jobs:
                     "https://www.nawy.com/sitemap/properties-$i.xml"; then
               SIZE=$(stat -c%s "sitemaps/properties-$i.xml" 2>/dev/null || echo "0")
               echo "✅ $SIZE bytes"
-              ((SUCCESS++))
+              SUCCESS=$((SUCCESS + 1))
             else
               echo "❌ Failed"
-              ((FAILED++))
+              FAILED=$((FAILED + 1))
             fi
             
             sleep 5
