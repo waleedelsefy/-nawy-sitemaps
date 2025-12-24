@@ -1,0 +1,60 @@
+<<<'YAML'
+name: Download Nawy Sitemaps Daily
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Create directory
+        run: mkdir -p sitemaps
+      
+      - name: Download all sitemaps
+        run: |
+          SUCCESS=0
+          FAILED=0
+          
+          for i in $(seq 1 214); do
+            printf "📥 Sitemap %3d: " "$i"
+            
+            if curl -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+                    -s -f -m 30 \
+                    -o "sitemaps/properties-$i.xml" \
+                    "https://www.nawy.com/sitemap/properties-$i.xml"; then
+              SIZE=$(stat -c%s "sitemaps/properties-$i.xml" 2>/dev/null || echo "0")
+              echo "✅ $SIZE bytes"
+              ((SUCCESS++))
+            else
+              echo "❌ Failed"
+              ((FAILED++))
+            fi
+            
+            sleep 5
+          done
+          
+          echo ""
+          echo "Summary: ✅ $SUCCESS success, ❌ $FAILED failed"
+      
+      - name: Commit and push
+        run: |
+          git config user.name "Nawy Sync Bot"
+          git config user.email "bot@nawy-sync.local"
+          git add sitemaps/
+          
+          if git diff --staged --quiet; then
+            echo "No changes detected"
+          else
+            git commit -m "🔄 Update sitemaps - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+            echo "✅ Changes pushed to repository"
+          fi
+YAML;
